@@ -1,6 +1,6 @@
 {
   "build": {
-    "command": "npm install && cd client && npm install --legacy-peer-deps && npm run build",
+    "command": "node vercel-build.js",
     "outputDirectory": "client/build",
     "env": {
       "NODE_ENV": "production",
