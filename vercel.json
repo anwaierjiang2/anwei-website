@@ -1,12 +1,6 @@
 {
-  "build": {
-    "command": "node vercel-build.js",
-    "outputDirectory": "client/build",
-    "env": {
-      "NODE_ENV": "production",
-      "VERCEL": "1"
-    }
-  },
+  "buildCommand": "node vercel-build.js",
+  "outputDirectory": "client/build",
   "devCommand": "npm run dev",
   "routes": [
     {
@@ -23,5 +17,9 @@
       "includeFiles": "server/**"
     }
   },
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "env": {
+    "NODE_ENV": "production",
+    "VERCEL": "1"
+  }
 }
