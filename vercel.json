@@ -1,0 +1,27 @@
+{
+  "build": {
+    "command": "npm install && cd client && npm install --legacy-peer-deps && npm run build",
+    "outputDirectory": "client/build",
+    "env": {
+      "NODE_ENV": "production",
+      "VERCEL": "1"
+    }
+  },
+  "devCommand": "npm run dev",
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/vercel-adapter.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/client/build/$1"
+    }
+  ],
+  "functions": {
+    "vercel-adapter.js": {
+      "includeFiles": "server/**"
+    }
+  },
+  "installCommand": "npm install"
+}
