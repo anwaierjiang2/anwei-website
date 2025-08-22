@@ -1,6 +1,6 @@
 {
   "build": {
-    "command": "npm install && cd client && npm install && npm run build",
+    "command": "npm install && cd client && npm install --legacy-peer-deps && npm run build",
     "outputDir": "client/build"
   },
   "run": {
