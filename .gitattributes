@@ -1,0 +1,43 @@
+# 通用文本文件配置，使用LF换行符
+* text=auto eol=lf
+
+# 特定文件类型保留CRLF（Windows批处理文件）
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 二进制文件类型不进行换行符转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+*.exe binary
+
+# 文本文件类型明确指定处理方式
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.xml text eol=lf
+*.txt text eol=lf
+
+# 环境配置文件
+.env* text eol=lf
+
+# Docker相关文件
+Dockerfile text eol=lf
+.dockerignore text eol=lf
+
+# Git相关文件
+.gitignore text eol=lf
+.gitattributes text eol=lf

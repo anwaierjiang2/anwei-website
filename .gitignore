@@ -1,0 +1,58 @@
+# 依赖目录
+node_modules/
+client/node_modules/
+
+# 环境变量文件
+.env
+.env.local
+client/.env
+client/.env.local
+
+# 构建产物
+client/build/
+
+# 上传的文件
+server/uploads/
+
+# 日志文件
+*.log
+server/logs/
+
+# 临时文件
+*.tmp
+*.temp
+
+# IDE和编辑器配置
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 数据库备份
+*.dump
+backup/
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 测试和覆盖率报告
+coverage/
+jest_*.svg
+
+# 其他
+npm-debug.log*
+client/npm-debug.log*
+package-lock.json
+client/package-lock.json
+
+# 证书文件
+*.pem
+*.key
+*.crt
+
+# 生产环境配置
+production.env

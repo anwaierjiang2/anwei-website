@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天系统功能测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #333; }
+        h2 { color: #555; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .status { font-weight: bold; margin: 10px 0; }
+        .success { color: #4CAF50; }
+        .error { color: #F44336; }
+        button { background-color: #4CAF50; color: white; border: none; padding: 10px 15px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px; }
+        button:hover { background-color: #45a049; }
+        .test-section { margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .result { margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 4px; font-family: monospace; white-space: pre-wrap; word-break: break-all; }
+        .token-section { margin: 20px 0; }
+        input[type="text"] { width: 100%; padding: 8px; margin: 8px 0; display: inline-block; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .api-url { font-size: 14px; color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>聊天系统功能测试</h1>
+    <p>此页面用于直观测试我们修复的聊天系统功能。请按照以下步骤操作：</p>
+
+    <div class="test-section">
+        <h2>1. 准备工作</h2>
+        <div class="token-section">
+            <label for="tokenInput">用户Token:</label>
+            <input type="text" id="tokenInput" placeholder="请输入您的用户token">
+            <p class="api-url">API 基础URL: <span id="apiUrl">http://localhost:5000/api</span></p>
+            <button id="saveTokenBtn">保存Token</button>
+        </div>
+        <div class="status" id="tokenStatus"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. 测试功能</h2>
+        <button id="validateTokenBtn">验证Token有效性</button>
+        <button id="getSessionsBtn">获取会话列表</button>
+        <button id="createSessionBtn">创建新会话</button>
+        <button id="getSessionDetailsBtn" disabled>获取会话详情</button>
+        <button id="sendMessageBtn" disabled>发送测试消息</button>
+    </div>
+
+    <div class="test-section">
+        <h2>3. 测试结果</h2>
+        <div class="result" id="testResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. 修复总结</h2>
+        <p>我们修复了以下关键问题，使聊天系统功能正常工作：</p>
+        <ul>
+            <li>客户端认证问题 - 为API请求添加了认证头</li>
+            <li>Socket.io连接问题 - 添加了认证token到连接头</li>
+            <li>服务器端用户ID不一致问题 - 将<code>req.user._id</code>更改为<code>req.user.userId</code></li>
+        </ul>
+        <p>如果所有测试都通过，说明聊天系统功能已经恢复正常。</p>
+    </div>
+
+    <script>
+        // DOM元素
+        const tokenInput = document.getElementById('tokenInput');
+        const saveTokenBtn = document.getElementById('saveTokenBtn');
+        const tokenStatus = document.getElementById('tokenStatus');
+        const validateTokenBtn = document.getElementById('validateTokenBtn');
+        const getSessionsBtn = document.getElementById('getSessionsBtn');
+        const createSessionBtn = document.getElementById('createSessionBtn');
+        const getSessionDetailsBtn = document.getElementById('getSessionDetailsBtn');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const testResult = document.getElementById('testResult');
+        const apiUrl = document.getElementById('apiUrl').textContent;
+
+        // 全局变量
+        let token = '';
+        let currentSessionId = '';
+
+        // 页面加载时尝试从localStorage获取token
+        window.onload = function() {
+            try {
+                const savedToken = localStorage.getItem('chatTestToken');
+                if (savedToken) {
+                    tokenInput.value = savedToken;
+                    token = savedToken;
+                    tokenStatus.textContent = '已加载保存的token';
+                    tokenStatus.className = 'status success';
+                }
+            } catch (e) {
+                console.error('获取保存的token失败:', e);
+            }
+        };
+
+        // 保存token
+        saveTokenBtn.addEventListener('click', function() {
+            token = tokenInput.value.trim();
+            if (token) {
+                try {
+                    localStorage.setItem('chatTestToken', token);
+                    tokenStatus.textContent = 'Token已保存';
+                    tokenStatus.className = 'status success';
+                    getSessionDetailsBtn.disabled = false;
+                    sendMessageBtn.disabled = false;
+                } catch (e) {
+                    tokenStatus.textContent = '保存Token失败: ' + e.message;
+                    tokenStatus.className = 'status error';
+                }
+            } else {
+                tokenStatus.textContent = '请输入有效的Token';
+                tokenStatus.className = 'status error';
+            }
+        });
+
+        // 验证token
+        validateTokenBtn.addEventListener('click', async function() {
+            if (!checkToken()) return;
+            
+            appendResult('\n=== 验证Token有效性 ===');
+            try {
+                const response = await fetch(`${apiUrl}/auth/profile`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    appendResult('✓ Token验证成功');
+                    appendResult('用户信息: ' + JSON.stringify(data.user));
+                    tokenStatus.className = 'status success';
+                } else {
+                    appendResult('✗ Token验证失败: ' + (data.message || JSON.stringify(data)));
+                    tokenStatus.className = 'status error';
+                }
+            } catch (error) {
+                appendResult('✗ 验证过程中发生错误: ' + error.message);
+                tokenStatus.className = 'status error';
+            }
+        });
+
+        // 获取会话列表
+        getSessionsBtn.addEventListener('click', async function() {
+            if (!checkToken()) return;
+            
+            appendResult('\n=== 获取会话列表 ===');
+            try {
+                const response = await fetch(`${apiUrl}/chat/sessions`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    appendResult(`✓ 获取会话列表成功，共 ${data.sessions.length} 个会话`);
+                    
+                    // 如果有会话，使用第一个会话ID
+                    if (data.sessions.length > 0) {
+                        currentSessionId = data.sessions[0].sessionId;
+                        appendResult(`已选择会话ID: ${currentSessionId}`);
+                        getSessionDetailsBtn.disabled = false;
+                        sendMessageBtn.disabled = false;
+                    }
+                } else {
+                    appendResult('✗ 获取会话列表失败: ' + (data.message || JSON.stringify(data)));
+                }
+            } catch (error) {
+                appendResult('✗ 获取会话列表过程中发生错误: ' + error.message);
+            }
+        });
+
+        // 创建新会话
+        createSessionBtn.addEventListener('click', async function() {
+            if (!checkToken()) return;
+            
+            appendResult('\n=== 创建新会话 ===');
+            try {
+                const response = await fetch(`${apiUrl}/chat/session`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        initialMessage: '你好，我需要帮助！'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.sessionId) {
+                    appendResult(`✓ 创建会话成功，会话ID: ${data.sessionId}`);
+                    currentSessionId = data.sessionId;
+                    getSessionDetailsBtn.disabled = false;
+                    sendMessageBtn.disabled = false;
+                } else {
+                    appendResult('✗ 创建会话失败: ' + (data.message || JSON.stringify(data)));
+                }
+            } catch (error) {
+                appendResult('✗ 创建会话过程中发生错误: ' + error.message);
+            }
+        });
+
+        // 获取会话详情
+        getSessionDetailsBtn.addEventListener('click', async function() {
+            if (!checkToken() || !checkSessionId()) return;
+            
+            appendResult('\n=== 获取会话详情 ===');
+            try {
+                const response = await fetch(`${apiUrl}/chat/sessions/${currentSessionId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.session) {
+                    appendResult('✓ 获取会话详情成功');
+                    appendResult(`会话状态: ${data.session.status}`);
+                    appendResult(`消息数量: ${data.session.messages.length}`);
+                    // 显示最新的几条消息
+                    if (data.session.messages.length > 0) {
+                        const recentMessages = data.session.messages.slice(-3);
+                        appendResult('最新消息: ' + JSON.stringify(recentMessages));
+                    }
+                } else {
+                    appendResult('✗ 获取会话详情失败: ' + (data.message || JSON.stringify(data)));
+                }
+            } catch (error) {
+                appendResult('✗ 获取会话详情过程中发生错误: ' + error.message);
+            }
+        });
+
+        // 发送消息
+        sendMessageBtn.addEventListener('click', async function() {
+            if (!checkToken() || !checkSessionId()) return;
+            
+            const messageContent = `测试消息 ${new Date().toISOString()}`;
+            appendResult('\n=== 发送测试消息 ===');
+            try {
+                const response = await fetch(`${apiUrl}/chat/sessions/${currentSessionId}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: messageContent
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    appendResult('✓ 发送消息成功');
+                    appendResult('消息内容: ' + messageContent);
+                } else {
+                    appendResult('✗ 发送消息失败: ' + (data.message || JSON.stringify(data)));
+                }
+            } catch (error) {
+                appendResult('✗ 发送消息过程中发生错误: ' + error.message);
+            }
+        });
+
+        // 辅助函数
+        function checkToken() {
+            if (!token) {
+                tokenStatus.textContent = '请先输入并保存Token';
+                tokenStatus.className = 'status error';
+                return false;
+            }
+            return true;
+        }
+
+        function checkSessionId() {
+            if (!currentSessionId) {
+                appendResult('请先创建会话或获取会话列表');
+                return false;
+            }
+            return true;
+        }
+
+        function appendResult(text) {
+            testResult.textContent += text + '\n';
+            testResult.scrollTop = testResult.scrollHeight; // 自动滚动到底部
+        }
+    </script>
+</body>
+</html>
