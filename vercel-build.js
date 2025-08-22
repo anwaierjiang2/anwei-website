@@ -1,4 +1,4 @@
-// Vercel构建脚本 - 确保所有依赖正确安装
+// Vercel构建脚本 - 优化版
 
 const { execSync } = require('child_process');
 const path = require('path');
@@ -7,36 +7,32 @@ const fs = require('fs');
 console.log('开始Vercel构建流程...');
 
 try {
-  // 清理npm缓存，避免缓存问题
-  console.log('清理npm缓存...');
-  execSync('npm cache clean --force', { stdio: 'inherit' });
-
+  // 设置NPM配置，增加构建稳定性
+  process.env.NODE_ENV = 'production';
+  
   // 安装根目录依赖
   console.log('安装根目录依赖...');
-  execSync('npm install', { stdio: 'inherit' });
+  execSync('npm install --legacy-peer-deps --force', { stdio: 'inherit' });
 
   // 切换到client目录
-  process.chdir(path.join(__dirname, 'client'));
+  const clientDir = path.join(__dirname, 'client');
+  console.log(`切换到客户端目录: ${clientDir}`);
+  process.chdir(clientDir);
   
-  // 清理client目录npm缓存
-  console.log('清理client目录npm缓存...');
-  execSync('npm cache clean --force', { stdio: 'inherit' });
-
-  // 单独安装react-scripts，确保它被正确安装
-  console.log('单独安装react-scripts...');
-  execSync('npm install react-scripts@5.0.1 --legacy-peer-deps', { stdio: 'inherit' });
-
-  // 安装client目录的其他依赖
-  console.log('安装client目录其他依赖...');
-  execSync('npm install --legacy-peer-deps', { stdio: 'inherit' });
-
-  // 确保react-scripts命令可用
-  console.log('检查react-scripts是否可用...');
-  execSync('npx react-scripts --version', { stdio: 'inherit' });
-
-  // 执行构建命令
+  // 安装client目录依赖 - 不单独安装react-scripts
+  console.log('安装客户端依赖...');
+  execSync('npm install --legacy-peer-deps --force', { stdio: 'inherit' });
+  
+  // 直接使用node_modules中的react-scripts
   console.log('执行构建命令...');
-  execSync('npm run build', { stdio: 'inherit' });
+  const reactScriptsPath = path.join(clientDir, 'node_modules', 'react-scripts', 'bin', 'react-scripts.js');
+  if (fs.existsSync(reactScriptsPath)) {
+    console.log(`找到react-scripts: ${reactScriptsPath}`);
+    execSync(`node ${reactScriptsPath} build`, { stdio: 'inherit' });
+  } else {
+    console.log('未找到react-scripts.js，尝试使用npm run build');
+    execSync('npm run build', { stdio: 'inherit' });
+  }
 
   // 检查构建结果
   const buildPath = path.join(__dirname, 'client', 'build');
