@@ -1,10 +1,8 @@
 {
   "version": 2,
-  "build": {
-    "command": "npm run build",
-    "outputDirectory": "client/build",
-    "installCommand": "npm install && cd client && npm install --legacy-peer-deps"
-  },
+  "buildCommand": "npm run build",
+  "outputDirectory": "client/build",
+  "installCommand": "npm install && cd client && npm install --legacy-peer-deps",
   "routes": [
     {
       "src": "/api/(.*)",
