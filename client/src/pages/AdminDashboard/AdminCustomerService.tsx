@@ -92,7 +92,7 @@ const AdminCustomerService: React.FC = () => {
         badge: '/logo512.png',
         tag: data.sessionId,
         requireInteraction: true,
-        renotify: true
+      
       };
 
       const notification = new Notification(
