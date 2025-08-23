@@ -1,7 +1,10 @@
 {
-  "buildCommand": "node vercel-build.js",
-  "outputDirectory": "client/build",
-  "devCommand": "npm run dev",
+  "version": 2,
+  "build": {
+    "command": "npm run build",
+    "outputDirectory": "client/build",
+    "installCommand": "npm install && cd client && npm install --legacy-peer-deps"
+  },
   "routes": [
     {
       "src": "/api/(.*)",
@@ -12,7 +15,6 @@
       "dest": "/client/build/$1"
     }
   ],
-  "installCommand": "npm install",
   "env": {
     "NODE_ENV": "production",
     "VERCEL": "1"
