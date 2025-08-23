@@ -1,8 +1,23 @@
 {
   "version": 2,
-  "functions": {
-    "vercel-adapter.js": {
-      "runtime": "nodejs18.x"
+  "builds": [
+    {
+      "src": "vercel-adapter.js",
+      "use": "@vercel/node@3"
+    },
+    {
+      "src": "client/build/**",
+      "use": "@vercel/static"
     }
-  }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/vercel-adapter.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/client/build/$1"
+    }
+  ]
 }
