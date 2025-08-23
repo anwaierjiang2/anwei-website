@@ -2,8 +2,8 @@
   "version": 2,
   "builds": [
     {
-      "src": "vercel-adapter.js",
-      "use": "@vercel/node@3"
+      "src": "api/*.js",
+      "use": "@vercel/node"
     },
     {
       "src": "client/build/**",
@@ -13,7 +13,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/vercel-adapter.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/(.*)",
