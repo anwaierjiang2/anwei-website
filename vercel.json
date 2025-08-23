@@ -2,7 +2,11 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "client/build",
-  "installCommand": "npm install && cd client && npm install --legacy-peer-deps",
+  "installCommand": "npm install --legacy-peer-deps --force && cd client && npm install --legacy-peer-deps --force",
+  "build.env": {
+    "NODE_ENV": "production",
+    "VERCEL": "1"
+  },
   "routes": [
     {
       "src": "/api/(.*)",
