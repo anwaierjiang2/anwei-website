@@ -1,4 +1,5 @@
 // Vercel适配器 - 解决Vercel平台特定的配置问题
+// @vercel/runtime: nodejs18.x
 
 // 导出Express应用，供Vercel的无服务器函数使用
 const express = require('express');
