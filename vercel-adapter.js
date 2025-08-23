@@ -31,12 +31,22 @@ app.use('/qrcodes', express.static(path.join(__dirname, 'server', 'public', 'qrc
 const isProduction = process.env.NODE_ENV === 'production';
 
 // 数据库连接
+let isConnected = false;
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/anwei', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000, // 5秒超时
+  socketTimeoutMS: 45000, // 45秒socket超时
 })
-.then(() => console.log('MongoDB连接成功'))
-.catch(err => console.error('MongoDB连接失败:', err));
+.then(() => {
+  console.log('MongoDB连接成功');
+  isConnected = true;
+})
+.catch(err => {
+  console.error('MongoDB连接失败:', err.message);
+  console.log('应用将以只读模式运行');
+  isConnected = false;
+});
 
 // 路由
 app.use('/api/auth', require('./server/routes/auth'));
@@ -79,7 +89,21 @@ if (isProduction) {
 
 // 健康检查
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'anwei网站服务器运行正常' });
+  res.json({ 
+    status: 'OK', 
+    message: 'anwei网站服务器运行正常',
+    database: isConnected ? '已连接' : '未连接',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// 根路径检查
+app.get('/', (req, res) => {
+  res.json({ 
+    message: '欢迎访问 anwei 网站 API',
+    status: 'running',
+    database: isConnected ? '已连接' : '未连接'
+  });
 });
 
 // 静态文件服务 - 在生产环境下提供React构建后的文件
